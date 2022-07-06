@@ -26,6 +26,16 @@ class ViewController: UIViewController {
         return manager
     }()
     
+    // 내 위치로 넘어갈 버튼
+    lazy var locationButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("내 위치", for: .normal)
+        button.backgroundColor = .systemGray
+        button.setTitleColor(.white, for: .normal)
+        button.addTarget(self, action: #selector(click), for: .touchUpInside)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -43,7 +53,13 @@ class ViewController: UIViewController {
         mapView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         mapView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         
-        
+        // 버튼 제약조건 설정
+        self.view.addSubview(locationButton)
+        locationButton.translatesAutoresizingMaskIntoConstraints = false
+        locationButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        locationButton.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        locationButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -10).isActive = true
+        locationButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
     }
     
     // 권한을 요청함
@@ -57,7 +73,7 @@ extension ViewController: CLLocationManagerDelegate {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             print("GPS 권한 설정됨")
-            DispatchQueue.main.async { // 버튼 누르면 이 위치로 넘어가게
+            DispatchQueue.main.async {
                 self.mapView.setUserTrackingMode(.follow, animated: true) // 내 위치로 넘어감
             }
         case .restricted, .notDetermined:
@@ -74,4 +90,13 @@ extension ViewController: CLLocationManagerDelegate {
             print("GPS: Default")
         }
     }
+    
+    // 버튼 누르면 내 위치로 돌아감
+    @objc func click() {
+        print("clicked")
+        
+        // 내 위치로 돌아가는 코드
+        self.mapView.setUserTrackingMode(.follow, animated: true)
+    }
+    
 }
