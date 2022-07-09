@@ -32,7 +32,7 @@ class ViewController: UIViewController {
         button.setTitle("내 위치", for: .normal)
         button.backgroundColor = .systemGray
         button.setTitleColor(.white, for: .normal)
-        button.addTarget(self, action: #selector(click), for: .touchUpInside)
+        button.addTarget(self, action: #selector(Mylocation), for: .touchUpInside)
         return button
     }()
     
@@ -91,12 +91,11 @@ extension ViewController: CLLocationManagerDelegate {
         }
     }
     
-    // 버튼 누르면 내 위치로 돌아감
-    @objc func click() {
-        print("clicked")
+    // 버튼 누르면 내 위치로 돌아가는 함수
+    @objc func Mylocation() {
+        print("내 위치")
         
         // 내 위치로 돌아가는 코드
         self.mapView.setUserTrackingMode(.follow, animated: true)
     }
-    
 }
