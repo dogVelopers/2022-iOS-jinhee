@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         return map
     }()
     
+    // GPS 
     lazy var locationManager: CLLocationManager = {
         let manager = CLLocationManager()
         manager.desiredAccuracy = kCLLocationAccuracyBest
@@ -25,6 +26,34 @@ class ViewController: UIViewController {
         manager.delegate = self
         return manager
     }()
+    
+    // 핀 생성하는 버튼
+    lazy var createMarkerButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage.init(systemName: "mappin.and.ellipse"), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(createMarkerAction), for: .touchUpInside)
+        return button
+    }()
+    
+    // 팝업창
+    let popupView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 16
+        view.isHidden = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+        
+    }()
+    
+    // title 입력 textfield
+    // subtitle 입력 textfield
+    // 확인 버튼
+    // popupView에 넣기
+    
+    // 생성하고자하는 위치
+    var willCreateLocation: CLLocationCoordinate2D = CLLocationCoordinate2D()
     
     // 내 위치로 넘어갈 버튼
     lazy var locationButton: UIButton = {
@@ -46,6 +75,8 @@ class ViewController: UIViewController {
         return button2
     }()
 
+    //MARK: - 뷰 디드 로드
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -55,16 +86,31 @@ class ViewController: UIViewController {
         
         // 뷰 추가
         self.view.addSubview(mapView)
+        self.view.addSubview(createMarkerButton)
+        self.view.addSubview(popupView)
+        self.view.addSubview(locationButton)
+        self.view.addSubview(mapButton)
         
         // 제약조건 설정- 순서는 항상 뷰 추가한 후
+        // mapview 초기화
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
         mapView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
         mapView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         mapView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
         
+        // 마커 생성 버튼 초기화
+        createMarkerButton.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 200).isActive = true
+        createMarkerButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20).isActive = true
+        
+        // 팝업 뷰 초기화
+        popupView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 120).isActive = true
+        popupView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -120).isActive = true
+        popupView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 30).isActive = true
+        popupView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -30).isActive = true
+        
+        
         // 내 위치 버튼 제약조건 설정
-        self.view.addSubview(locationButton)
         locationButton.translatesAutoresizingMaskIntoConstraints = false
         locationButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
         locationButton.heightAnchor.constraint(equalToConstant: 100).isActive = true
@@ -72,20 +118,67 @@ class ViewController: UIViewController {
         locationButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
         
         // 위성지도/기본 지도 버튼 제약조건
-        self.view.addSubview(mapButton)
         mapButton.translatesAutoresizingMaskIntoConstraints = false
         mapButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         mapButton.heightAnchor.constraint(equalToConstant: 80).isActive = true
         mapButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -320).isActive = true
         mapButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 670).isActive = true
+        
+        addGesture()
+        
+        // 원하는 위치 표시
+        createMarker(title: "학교", subtitle: "성공회대학교", coordinate: CLLocationCoordinate2D(latitude: 37.487744, longitude: 126.825028))
     }
     
     // 권한을 요청함
     func getLocationUsagePermission() {
         self.locationManager.requestWhenInUseAuthorization()
     }
+    
+    // 위치 나타내는 함수
+    func createMarker(title: String, subtitle: String, coordinate: CLLocationCoordinate2D) {
+        let marker = Mark(title: title, subtitle: subtitle, coordinate: coordinate)
+        mapView.addAnnotation(marker)
+    }
+    
+    // 제스처 함수
+    func addGesture() {
+        let touch = UITapGestureRecognizer(target: self, action: #selector(self.didClickMapView(sender:)))
+        self.mapView.addGestureRecognizer(touch)
+    }
+    
 }
 
+//MARK: - 오브젝트 함수 모음
+
+extension ViewController {
+    // 앱을 클릭하면 실행되는 함수
+    @objc func didClickMapView(sender: UITapGestureRecognizer) {
+        //popupView 띄우기
+        
+        let location: CGPoint = sender.location(in: self.mapView)
+        willCreateLocation = self.mapView.convert(location, toCoordinateFrom: self.mapView)
+        //let mapLocation: CLLocationCoordinate2D = self.mapView.convert(location, toCoordinateFrom: self.mapView)
+        
+        //print("위도: \(mapLocation.latitude), 경도: \(mapLocation.longitude)")
+        
+        // 클릭된 상태에서는 생성되면 안됨
+        //createMarker(title: "Test", subtitle: "Test1", coordinate: mapLocation)
+    }
+    
+    @objc func createMarkerAction() {
+        // 흰색 뷰 보이게
+        print("흰색 뷰 보이게")
+        popupView.isHidden.toggle()
+    }
+    
+    // 확인 버튼 액션
+    @objc func confirmAction() {
+        createMarker(title: "", subtitle: "", coordinate: willCreateLocation)
+    }
+}
+
+//MARK: - GPS 권한 설정
 extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         switch status {
