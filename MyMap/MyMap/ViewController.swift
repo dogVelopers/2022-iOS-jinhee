@@ -217,6 +217,9 @@ extension ViewController {
     @objc func confirmAction() {
         createMarker(title: "\(titleText.text!)", subtitle: "\(subtitleText.text!)", coordinate: willCreateLocation)
         print("위도: \(willCreateLocation.latitude), 경도: \(willCreateLocation.longitude)")
+        
+        // 확인 버튼 누르면 팝업창 사라짐
+        popupView.isHidden = true
     }
 }
 
