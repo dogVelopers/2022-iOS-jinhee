@@ -48,9 +48,36 @@ class ViewController: UIViewController {
     }()
     
     // title 입력 textfield
+    lazy var titleText: UITextField = {
+        let text = UITextField()
+        text.frame = CGRect(x: 65, y: 70, width: 200, height: 30)
+        text.placeholder = "제목"
+        //text.delegate = self
+        text.borderStyle = .roundedRect
+        text.clearButtonMode = .whileEditing // 텍스트 편집하는 동안에만
+        return text
+    }()
+    
     // subtitle 입력 textfield
-    // 확인 버튼
-    // popupView에 넣기
+    lazy var subtitleText: UITextField = {
+        let text2 = UITextField()
+        text2.frame = CGRect(x: 65, y: 120, width: 200, height: 30)
+        text2.placeholder = "부제목"
+        //text2.delegate = self
+        text2.borderStyle = .roundedRect
+        text2.clearButtonMode = .whileEditing // 텍스트 편집하는 동안에만
+        return text2
+    }()
+    
+    // 팝업창 확인 버튼
+    lazy var textButton: UIButton = {
+        let button3 = UIButton()
+        button3.setTitle("확인", for: .normal)
+        button3.backgroundColor = .systemBlue
+        button3.tintColor = .white
+        button3.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
+        return button3
+    }()
     
     // 생성하고자하는 위치
     var willCreateLocation: CLLocationCoordinate2D = CLLocationCoordinate2D()
@@ -91,6 +118,11 @@ class ViewController: UIViewController {
         self.view.addSubview(locationButton)
         self.view.addSubview(mapButton)
         
+        // popupview에 넣기
+        self.popupView.addSubview(titleText)
+        self.popupView.addSubview(subtitleText)
+        self.popupView.addSubview(textButton)
+        
         // 제약조건 설정- 순서는 항상 뷰 추가한 후
         // mapview 초기화
         mapView.translatesAutoresizingMaskIntoConstraints = false
@@ -108,6 +140,13 @@ class ViewController: UIViewController {
         popupView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -120).isActive = true
         popupView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 30).isActive = true
         popupView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -30).isActive = true
+        
+        // 팝업창 확인 버튼 제약조건
+        textButton.translatesAutoresizingMaskIntoConstraints = false
+        textButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        textButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        textButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -150).isActive = true
+        textButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 400).isActive = true
         
         
         // 내 위치 버튼 제약조건 설정
@@ -155,14 +194,16 @@ extension ViewController {
     // 앱을 클릭하면 실행되는 함수
     @objc func didClickMapView(sender: UITapGestureRecognizer) {
         //popupView 띄우기
+        popupView.isHidden.toggle()
         
         let location: CGPoint = sender.location(in: self.mapView)
         willCreateLocation = self.mapView.convert(location, toCoordinateFrom: self.mapView)
-        //let mapLocation: CLLocationCoordinate2D = self.mapView.convert(location, toCoordinateFrom: self.mapView)
         
+//        let mapLocation: CLLocationCoordinate2D = self.mapView.convert(location, toCoordinateFrom: self.mapView)
+
         //print("위도: \(mapLocation.latitude), 경도: \(mapLocation.longitude)")
         
-        // 클릭된 상태에서는 생성되면 안됨
+        //클릭된 상태에서는 생성되면 안됨
         //createMarker(title: "Test", subtitle: "Test1", coordinate: mapLocation)
     }
     
@@ -172,9 +213,13 @@ extension ViewController {
         popupView.isHidden.toggle()
     }
     
-    // 확인 버튼 액션
+    // 팝업창 확인 버튼 액션
     @objc func confirmAction() {
-        createMarker(title: "", subtitle: "", coordinate: willCreateLocation)
+        createMarker(title: "\(titleText.text!)", subtitle: "\(subtitleText.text!)", coordinate: willCreateLocation)
+        print("위도: \(willCreateLocation.latitude), 경도: \(willCreateLocation.longitude)")
+        
+        // 확인 버튼 누르면 팝업창 사라짐
+        popupView.isHidden = true
     }
 }
 
